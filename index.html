@@ -280,6 +280,8 @@
     <div class="header-row">
       <h2>Notepad</h2>
       <div class="main-btn-group">
+        <!-- Clear Format Button added before Theme -->
+        <button onclick="clearFormat()">Clear Format</button>
         <button onclick="toggleTheme()">Theme</button>
         <button onclick="copyText()">Copy</button>
         
@@ -392,6 +394,15 @@
     // Formatting Functions
     function format(command, value = null) {
       document.execCommand(command, false, value);
+      editor.focus();
+      checkActiveStates();
+    }
+
+    // Clear Formatting Function
+    function clearFormat() {
+      document.execCommand('removeFormat', false, null);
+      document.execCommand('unlink', false, null);
+      document.execCommand('backColor', false, 'transparent');
       editor.focus();
       checkActiveStates();
     }
