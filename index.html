@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Online Notepad</title>
+  <!-- html2pdf.js library for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --border-color: #dddddd;
+      --btn-bg: #e9ecef;
+      --btn-color: #333333;
+      --btn-active: #0d6efd;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --border-color: #333333;
+      --btn-bg: #2d2d2d;
+      --btn-color: #ffffff;
+      --btn-active: #0d6efd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--card-bg);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* First Row: Header Action Buttons */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-row h2 {
+      font-size: 1.1rem;
+      white-space: nowrap;
+    }
+
+    .main-btn-group {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Second Row: Formatting Tools */
+    .format-row {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 4px;
+      border-top: 1px solid var(--border-color);
+      flex-wrap: nowrap;
+    }
+
+    button, select {
+      background-color: var(--btn-bg);
+      color: var(--btn-color);
+      border: 1px solid var(--border-color);
+      padding: 4px 7px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    button:hover, select:hover {
+      opacity: 0.85;
+    }
+
+    button.active {
+      background-color: var(--btn-active) !important;
+      color: #ffffff !important;
+      border-color: var(--btn-active) !important;
+    }
+
+    /* Green Local Save Button */
+    .btn-success {
+      background-color: #198754;
+      color: #fff;
+      border-color: #198754;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: #fff;
+      border-color: #dc3545;
+    }
+
+    select {
+      outline: none;
+      max-width: 85px;
+    }
+
+    /* Circle Shape Color Picker Wrapper */
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--btn-bg);
+      padding: 2px 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      flex-shrink: 0;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+    }
+
+    /* Editor Window */
+    .editor {
+      flex: 1;
+      width: 100%;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      overflow-y: auto;
+      outline: none;
+      word-wrap: break-word;
+    }
+
+    /* List Alignment inside Editor */
+    .editor ul, .editor ol {
+      list-style-position: inside !important;
+      padding-left: 0 !important;
+      margin-left: 0 !important;
+    }
+
+    .editor[placeholder]:empty:before {
+      content: attr(placeholder);
+      color: #888;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      opacity: 0.8;
+      padding-top: 4px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* Custom Popup Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      color: var(--text-color);
+      padding: 20px 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 300px;
+      width: 85%;
+      text-align: center;
+      transform: scale(0.8);
+      transition: transform 0.25s ease;
+      border: 1px solid var(--border-color);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-card p {
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .header-row h2 {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- First Row: Header Buttons -->
+    <div class="header-row">
+      <h2>📝 Notepad</h2>
+      <div class="main-btn-group">
+        <button onclick="toggleTheme()">🌙 Theme</button>
+        <button onclick="copyText()">📋 Copy</button>
+        
+        <!-- Green Save Button (Manual Local Storage Save) -->
+        <button class="btn-success" onclick="manualSaveNote()">💾 Save</button>
+
+        <!-- Save As Dropdown Menu -->
+        <select onchange="handleSaveAs(this.value); this.value='';" style="font-weight:600;">
+          <option value="" disabled selected>📥 Save As</option>
+          <option value="txt">.txt (Notepad)</option>
+          <option value="pdf">.pdf (PDF Doc)</option>
+        </select>
+
+        <button class="btn-danger" onclick="clearTextConfirm()">🗑️ Clear</button>
+      </div>
+    </div>
+
+    <!-- Second Row: Compact Single Line Formatting -->
+    <div class="format-row">
+      <button id="btn-bold" onclick="format('bold')"><b>B</b></button>
+      <button id="btn-italic" onclick="format('italic')"><i>I</i></button>
+      <button id="btn-underline" onclick="format('underline')"><u>U</u></button>
+      <button id="btn-strikeThrough" onclick="format('strikeThrough')"><s>S</s></button>
+      
+      <button id="btn-insertUnorderedList" onclick="format('insertUnorderedList')">• List</button>
+      <button id="btn-insertOrderedList" onclick="format('insertOrderedList')">1. List</button>
+
+      <!-- Circle Color Picker -->
+      <div class="color-picker-wrapper">
+        <label for="textColor">🎨</label>
+        <input type="color" id="textColor" value="#333333" onchange="changeTextColor(this.value)">
+      </div>
+
+      <!-- Size Dropdown -->
+      <select onchange="changeFontSize(this.value)">
+        <option value="3">Size</option>
+        <option value="1">Small</option>
+        <option value="3">Normal</option>
+        <option value="4">Large</option>
+        <option value="6">Huge</option>
+      </select>
+    </div>
+
+    <!-- Main Text Editor -->
+    <div id="editor" class="editor" contenteditable="true" placeholder="Start typing here..."></div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span id="stats">0 Characters | 0 Words</span>
+      <span>Auto-Saved</span>
+    </div>
+  </div>
+
+  <!-- Custom Popup Modal -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-card">
+      <p id="modalMessage">Notification Message</p>
+      <div class="modal-buttons" id="modalButtons">
+        <button onclick="closeModal()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const stats = document.getElementById('stats');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalButtons = document.getElementById('modalButtons');
+
+    // Auto Load Saved Content
+    window.onload = () => {
+      const savedNote = localStorage.getItem('adv_notepad_content');
+      if (savedNote) {
+        editor.innerHTML = savedNote;
+        updateStats();
+      }
+      if (localStorage.getItem('adv_notepad_theme') === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        document.getElementById('textColor').value = '#e0e0e0';
+      }
+    };
+
+    // Auto Save & Formatting Active Monitor
+    editor.addEventListener('input', () => {
+      localStorage.setItem('adv_notepad_content', editor.innerHTML);
+      updateStats();
+      checkActiveStates();
+    });
+
+    document.addEventListener('selectionchange', () => {
+      if (document.activeElement === editor || editor.contains(document.activeElement)) {
+        checkActiveStates();
+      }
+    });
+
+    function updateStats() {
+      const text = editor.innerText || "";
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      stats.innerText = `${chars} Characters | ${words} Words`;
+    }
+
+    // Formatting Functions
+    function format(command, value = null) {
+      document.execCommand(command, false, value);
+      editor.focus();
+      checkActiveStates();
+    }
+
+    function changeTextColor(color) {
+      document.execCommand('foreColor', false, color);
+      editor.focus();
+    }
+
+    function changeFontSize(size) {
+      document.execCommand('fontSize', false, size);
+      editor.focus();
+    }
+
+    // Highlight Active Buttons
+    function checkActiveStates() {
+      const commands = ['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'];
+      commands.forEach(cmd => {
+        const btn = document.getElementById('btn-' + cmd);
+        if (btn) {
+          if (document.queryCommandState(cmd)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+    }
+
+    // Theme Switcher
+    function toggleTheme() {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.body.removeAttribute('data-theme');
+        localStorage.setItem('adv_notepad_theme', 'light');
+        document.getElementById('textColor').value = '#333333';
+      } else {
+        document.body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('adv_notepad_theme', 'dark');
+        document.getElementById('textColor').value = '#e0e0e0';
+      }
+    }
+
+    // Modal Functions
+    function showModal(msg, isConfirm = false, onConfirm = null) {
+      modalMessage.innerText = msg;
+      if (isConfirm) {
+        modalButtons.innerHTML = `
+          <button class="btn-danger" id="confirmBtn">Yes</button>
+          <button onclick="closeModal()">No</button>
+        `;
+        document.getElementById('confirmBtn').onclick = () => {
+          closeModal();
+          if (onConfirm) onConfirm();
+        };
+      } else {
+        modalButtons.innerHTML = `<button onclick="closeModal()">OK</button>`;
+      }
+      modalOverlay.classList.add('active');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+    }
+
+    // Manual Save Button (Green Button Action)
+    function manualSaveNote() {
+      localStorage.setItem('adv_notepad_content', editor.innerHTML);
+      showModal('Note saved successfully to local browser!');
+    }
+
+    // Save As Dropdown Handler (.txt and .pdf)
+    function handleSaveAs(type) {
+      const text = editor.innerText.trim();
+      if (!text) {
+        showModal('Notepad is empty!');
+        return;
+      }
+
+      if (type === 'txt') {
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const anchor = document.createElement('a');
+        anchor.download = 'My-Note.txt';
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+      } else if (type === 'pdf') {
+        const opt = {
+          margin:       10,
+          filename:     'My-Note.pdf',
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(editor).save();
+      }
+    }
+
+    // Copy Content
+    function copyText() {
+      const text = editor.innerText;
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      showModal('Content copied to clipboard!');
+    }
+
+    // Clear Text Confirmation
+    function clearTextConfirm() {
+      showModal('Are you sure you want to clear all content?', true, () => {
+        editor.innerHTML = '';
+        localStorage.removeItem('adv_notepad_content');
+        updateStats();
+        checkActiveStates();
+      });
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key.toLowerCase()) {
+          case 's':
+            e.preventDefault();
+            manualSaveNote();
+            break;
+          case 'b':
+            e.preventDefault();
+            format('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            format('italic');
+            break;
+          case 'u':
+            e.preventDefault();
+            format('underline');
+            break;
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
