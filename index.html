@@ -73,15 +73,32 @@
       width: 100%;
     }
 
-    /* Second Row: Formatting Tools */
+    /* Second Row: Formatting Tools (Centered for both Mobile & Desktop) */
     .format-row {
       display: flex;
       gap: 4px;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center; /* Center aligned for Mobile & Desktop */
       padding-top: 4px;
       border-top: 1px solid var(--border-color);
-      flex-wrap: nowrap;
+      flex-wrap: wrap; /* Allows auto wrap if screen is very small */
+    }
+
+    /* Hide Alignment Buttons on Mobile */
+    .desktop-only {
+      display: none !important;
+    }
+
+    /* Desktop View Adjustments */
+    @media (min-width: 768px) {
+      .format-row {
+        gap: 6px;
+      }
+      
+      /* Show Alignment Buttons only on Desktop */
+      .desktop-only {
+        display: inline-flex !important;
+      }
     }
 
     button, select {
@@ -286,6 +303,12 @@
       <button id="btn-italic" onclick="format('italic')"><i>I</i></button>
       <button id="btn-underline" onclick="format('underline')"><u>U</u></button>
       <button id="btn-strikeThrough" onclick="format('strikeThrough')"><s>S</s></button>
+
+      <!-- Alignment Buttons (Visible ONLY on Desktop) -->
+      <button id="btn-justifyLeft" class="desktop-only" onclick="format('justifyLeft')">Left</button>
+      <button id="btn-justifyCenter" class="desktop-only" onclick="format('justifyCenter')">Center</button>
+      <button id="btn-justifyRight" class="desktop-only" onclick="format('justifyRight')">Right</button>
+      <button id="btn-justifyFull" class="desktop-only" onclick="format('justifyFull')">Justify</button>
       
       <button id="btn-insertUnorderedList" onclick="format('insertUnorderedList')">• List</button>
       <button id="btn-insertOrderedList" onclick="format('insertOrderedList')">1. List</button>
@@ -297,8 +320,8 @@
       </div>
 
       <!-- Size Dropdown -->
-      <select onchange="changeFontSize(this.value)">
-        <option value="3">Size</option>
+      <select id="fontSizeSelect" onchange="changeFontSize(this.value)">
+        <option value="" disabled selected>Size</option>
         <option value="1">Small</option>
         <option value="3">Normal</option>
         <option value="4">Large</option>
@@ -379,13 +402,19 @@
     }
 
     function changeFontSize(size) {
+      if (!size) return;
       document.execCommand('fontSize', false, size);
       editor.focus();
+      document.getElementById('fontSizeSelect').value = ""; // Reset select dropdown
     }
 
     // Highlight Active Buttons
     function checkActiveStates() {
-      const commands = ['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'];
+      const commands = [
+        'bold', 'italic', 'underline', 'strikeThrough', 
+        'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
+        'insertUnorderedList', 'insertOrderedList'
+      ];
       commands.forEach(cmd => {
         const btn = document.getElementById('btn-' + cmd);
         if (btn) {
