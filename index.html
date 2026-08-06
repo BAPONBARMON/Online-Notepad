@@ -261,22 +261,22 @@
     
     <!-- First Row: Header Buttons -->
     <div class="header-row">
-      <h2>📝 Notepad</h2>
+      <h2>Notepad</h2>
       <div class="main-btn-group">
-        <button onclick="toggleTheme()">🌙 Theme</button>
-        <button onclick="copyText()">📋 Copy</button>
+        <button onclick="toggleTheme()">Theme</button>
+        <button onclick="copyText()">Copy</button>
         
         <!-- Green Save Button (Manual Local Storage Save) -->
-        <button class="btn-success" onclick="manualSaveNote()">💾 Save</button>
+        <button class="btn-success" onclick="manualSaveNote()">Save</button>
 
         <!-- Save As Dropdown Menu -->
         <select onchange="handleSaveAs(this.value); this.value='';" style="font-weight:600;">
-          <option value="" disabled selected>📥 Save As</option>
+          <option value="" disabled selected>Save As</option>
           <option value="txt">.txt (Notepad)</option>
           <option value="pdf">.pdf (PDF Doc)</option>
         </select>
 
-        <button class="btn-danger" onclick="clearTextConfirm()">🗑️ Clear</button>
+        <button class="btn-danger" onclick="clearTextConfirm()">Clear</button>
       </div>
     </div>
 
