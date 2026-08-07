@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Online Notepad</title>
+  <title>Online Notepad</title>
   <!-- html2pdf.js library for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -47,7 +47,7 @@
       width: 100vw;
       height: 100vh;
       background-color: var(--card-bg);
-      padding: 8px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -58,30 +58,31 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      width: 100%;
     }
 
     .header-row h2 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       white-space: nowrap;
     }
 
     .main-btn-group {
       display: flex;
       gap: 4px;
-      justify-content: center;
+      justify-content: space-between;
       width: 100%;
     }
 
-    /* Second Row: Formatting Tools (Centered for both Mobile & Desktop) */
+    /* Second Row: Formatting Tools */
     .format-row {
       display: flex;
       gap: 4px;
       align-items: center;
-      justify-content: center; /* Center aligned for Mobile & Desktop */
+      justify-content: space-between;
       padding-top: 4px;
       border-top: 1px solid var(--border-color);
-      flex-wrap: wrap; /* Allows auto wrap if screen is very small */
+      width: 100%;
     }
 
     /* Hide Alignment Buttons on Mobile */
@@ -89,32 +90,23 @@
       display: none !important;
     }
 
-    /* Desktop View Adjustments */
-    @media (min-width: 768px) {
-      .format-row {
-        gap: 6px;
-      }
-      
-      /* Show Alignment Buttons only on Desktop */
-      .desktop-only {
-        display: inline-flex !important;
-      }
-    }
-
     button, select {
       background-color: var(--btn-bg);
       color: var(--btn-color);
       border: 1px solid var(--border-color);
-      padding: 4px 7px;
+      padding: 6px 4px;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 2px;
       user-select: none;
-      flex-shrink: 0;
+      flex: 1 1 auto;
+      text-align: center;
+      min-width: 0;
     }
 
     button:hover, select:hover {
@@ -127,7 +119,6 @@
       border-color: var(--btn-active) !important;
     }
 
-    /* Green Local Save Button */
     .btn-success {
       background-color: #198754;
       color: #fff;
@@ -142,26 +133,26 @@
 
     select {
       outline: none;
-      max-width: 85px;
     }
 
     /* Circle Shape Color Picker Wrapper */
     .color-picker-wrapper {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 2px;
       background: var(--btn-bg);
-      padding: 2px 4px;
+      padding: 4px;
       border: 1px solid var(--border-color);
-      border-radius: 15px;
-      flex-shrink: 0;
+      border-radius: 6px;
+      flex: 1 1 auto;
     }
 
     input[type="color"] {
       -webkit-appearance: none;
       border: none;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       cursor: pointer;
       background: transparent;
@@ -192,7 +183,6 @@
       word-wrap: break-word;
     }
 
-    /* List Alignment inside Editor */
     .editor ul, .editor ol {
       list-style-position: inside !important;
       padding-left: 0 !important;
@@ -265,9 +255,31 @@
       gap: 10px;
     }
 
+    /* Desktop View Adjustments */
+    @media (min-width: 768px) {
+      .format-row {
+        gap: 6px;
+      }
+      .desktop-only {
+        display: inline-flex !important;
+      }
+    }
+
+    /* Mobile Strict 2-Line Header & Formatting Toolbar Layout */
     @media (max-width: 600px) {
       .header-row h2 {
         display: none;
+      }
+      .main-btn-group button, 
+      .main-btn-group select {
+        padding: 7px 2px;
+        font-size: 0.75rem;
+      }
+      .format-row button, 
+      .format-row select,
+      .format-row .color-picker-wrapper {
+        padding: 7px 2px;
+        font-size: 0.85rem;
       }
     }
   </style>
@@ -276,30 +288,26 @@
 
   <div class="container">
     
-    <!-- First Row: Header Buttons -->
+    <!-- First Row: Header Action Buttons (Line 1) -->
     <div class="header-row">
-      <h2>Notepad</h2>
+      <h2>Online Notepad.......</h2>
       <div class="main-btn-group">
-        <!-- Clear Format Button added before Theme -->
-        <button onclick="clearFormat()">Clear Format</button>
-        <button onclick="toggleTheme()">Theme</button>
+        <button onclick="clearFormat()">Clear</button>
+        <button onclick="toggleTheme()">Dark</button>
         <button onclick="copyText()">Copy</button>
-        
-        <!-- Green Save Button (Manual Local Storage Save) -->
         <button class="btn-success" onclick="manualSaveNote()">Save</button>
 
-        <!-- Save As Dropdown Menu -->
         <select onchange="handleSaveAs(this.value); this.value='';" style="font-weight:600;">
-          <option value="" disabled selected>Save As</option>
-          <option value="txt">.txt (Notepad)</option>
-          <option value="pdf">.pdf (PDF Doc)</option>
+          <option value="" disabled selected>Export</option>
+          <option value="txt">.txt</option>
+          <option value="pdf">.pdf</option>
         </select>
 
-        <button class="btn-danger" onclick="clearTextConfirm()">Clear</button>
+        <button class="btn-danger" onclick="clearTextConfirm()">Delete</button>
       </div>
     </div>
 
-    <!-- Second Row: Compact Single Line Formatting -->
+    <!-- Second Row: Compact Single Line Formatting (Line 2) -->
     <div class="format-row">
       <button id="btn-bold" onclick="format('bold')"><b>B</b></button>
       <button id="btn-italic" onclick="format('italic')"><i>I</i></button>
@@ -310,10 +318,15 @@
       <button id="btn-justifyLeft" class="desktop-only" onclick="format('justifyLeft')">Left</button>
       <button id="btn-justifyCenter" class="desktop-only" onclick="format('justifyCenter')">Center</button>
       <button id="btn-justifyRight" class="desktop-only" onclick="format('justifyRight')">Right</button>
-      <button id="btn-justifyFull" class="desktop-only" onclick="format('justifyFull')">Justify</button>
+      <button id="btn-justifyFull" class="desktop-only" onclick="format('justifyFull')">Align</button>
       
-      <button id="btn-insertUnorderedList" onclick="format('insertUnorderedList')">• List</button>
-      <button id="btn-insertOrderedList" onclick="format('insertOrderedList')">1. List</button>
+      <!-- MS Word Style List Dropdown with ABC -->
+      <select id="listSelect" onchange="applyListStyle(this.value)">
+        <option value="" disabled selected>List</option>
+        <option value="bullet">• Bullet</option>
+        <option value="number">1. Number</option>
+        <option value="alpha">A. Letter</option>
+      </select>
 
       <!-- Circle Color Picker -->
       <div class="color-picker-wrapper">
@@ -398,6 +411,44 @@
       checkActiveStates();
     }
 
+    // Apply Custom List Style (Bullets, Numbers, Uppercase ABC)
+    function applyListStyle(type) {
+      if (!type) return;
+
+      if (type === 'bullet') {
+        document.execCommand('insertUnorderedList', false, null);
+      } else if (type === 'number') {
+        document.execCommand('insertOrderedList', false, null);
+        setTimeout(() => {
+          const sel = window.getSelection();
+          if (sel.rangeCount > 0) {
+            let node = sel.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentNode;
+            if (node) {
+              const ol = node.closest('ol');
+              if (ol) ol.removeAttribute('type');
+            }
+          }
+        }, 10);
+      } else if (type === 'alpha') {
+        document.execCommand('insertOrderedList', false, null);
+        setTimeout(() => {
+          const sel = window.getSelection();
+          if (sel.rangeCount > 0) {
+            let node = sel.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentNode;
+            if (node) {
+              const ol = node.closest('ol');
+              if (ol) ol.setAttribute('type', 'A'); // Sets Uppercase 'A' List
+            }
+          }
+        }, 10);
+      }
+      editor.focus();
+      document.getElementById('listSelect').value = ""; // Reset dropdown
+      checkActiveStates();
+    }
+
     // Clear Formatting Function
     function clearFormat() {
       document.execCommand('removeFormat', false, null);
@@ -423,8 +474,7 @@
     function checkActiveStates() {
       const commands = [
         'bold', 'italic', 'underline', 'strikeThrough', 
-        'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
-        'insertUnorderedList', 'insertOrderedList'
+        'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'
       ];
       commands.forEach(cmd => {
         const btn = document.getElementById('btn-' + cmd);
@@ -474,13 +524,13 @@
       modalOverlay.classList.remove('active');
     }
 
-    // Manual Save Button (Green Button Action)
+    // Manual Save Button
     function manualSaveNote() {
       localStorage.setItem('adv_notepad_content', editor.innerHTML);
       showModal('Note saved successfully to local browser!');
     }
 
-    // Save As Dropdown Handler (.txt and .pdf)
+    // Save As Dropdown Handler
     function handleSaveAs(type) {
       const text = editor.innerText.trim();
       if (!text) {
